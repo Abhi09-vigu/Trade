@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Trade Analysis Pro</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dark-theme">
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+    <div class="bg-shape shape-3"></div>
+
+    <div class="container main-container py-5">
+        <header class="text-center mb-5">
+            <h1 class="display-4 fw-bold gradient-text">AI Trade Analysis Pro</h1>
+            <p class="text-muted lead">Advanced Market Insights Powered by Google Gemini</p>
+        </header>
+
+        <div class="row g-4">
+            <!-- Left Column: Input Form -->
+            <div class="col-lg-5">
+                <div class="glass-card p-4">
+                    <h4 class="mb-4 fw-semibold border-bottom border-secondary pb-2">Market Data Input</h4>
+                    <form id="analysis-form">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label form-label-sm">Symbol</label>
+                                <input type="text" class="form-control" id="symbol" required placeholder="e.g. BTC/USD" value="BTC/USD">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label form-label-sm">Current Price</label>
+                                <input type="number" step="any" class="form-control" id="price" required placeholder="e.g. 64000" value="64000">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label form-label-sm">RSI (14)</label>
+                                <input type="number" step="any" class="form-control" id="rsi" required placeholder="e.g. 45" value="45">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label form-label-sm">Moving Average</label>
+                                <input type="number" step="any" class="form-control" id="ma" required placeholder="e.g. 62000" value="62000">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label form-label-sm">Trend</label>
+                                <select class="form-select" id="trend" required>
+                                    <option value="Uptrend" selected>Uptrend</option>
+                                    <option value="Downtrend">Downtrend</option>
+                                    <option value="Sideways">Sideways</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label form-label-sm">Volume</label>
+                                <input type="text" class="form-control" id="volume" required placeholder="e.g. 1.2B" value="1.2B">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mt-4 custom-btn">
+                            <span class="btn-text">Analyze Market</span>
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Column: Results -->
+            <div class="col-lg-7">
+                <div class="glass-card p-4 h-100 d-flex flex-column relative-container">
+                    <h4 class="mb-4 fw-semibold border-bottom border-secondary pb-2">Analysis Results</h4>
+                    
+                    <div id="initial-state" class="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-muted py-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-bar-chart-line mb-3 opacity-50" viewBox="0 0 16 16">
+                            <path d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h1V7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7h1zM2 13h2v-3H2zm5-6h2v6H7zm5-5h2v11h-2z"/>
+                        </svg>
+                        <p>Enter data and run analysis to see insights.</p>
+                    </div>
+
+                    <div id="error-alert" class="alert alert-danger d-none mt-3" role="alert"></div>
+
+                    <div id="results-container" class="d-none flex-grow-1 mt-2">
+                        <!-- Parsed results will be injected here -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="metric-card">
+                                    <div class="metric-label">Market Condition</div>
+                                    <div class="metric-value" id="res-condition">--</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="metric-card">
+                                    <div class="metric-label">Suggested Action</div>
+                                    <div class="metric-value" id="res-action">--</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="metric-card">
+                                    <div class="metric-label">Risk Level</div>
+                                    <div class="metric-value" id="res-risk">--</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="metric-card">
+                                    <div class="metric-label">Confidence</div>
+                                    <div class="metric-value" id="res-confidence">--</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="content-card mb-3">
+                            <h5 class="content-title text-primary">Entry Strategy</h5>
+                            <div class="content-body" id="res-entry">--</div>
+                        </div>
+
+                        <div class="content-card mb-3 alert-card border-warning text-warning">
+                            <h5 class="content-title text-warning">Stop Loss Suggestion</h5>
+                            <div class="content-body" id="res-stoploss">--</div>
+                        </div>
+
+                        <div class="content-card">
+                            <h5 class="content-title text-info">Reasoning</h5>
+                            <div class="content-body" id="res-reason">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('analysis-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = this.querySelector('button[type="submit"]');
+            const btnText = btn.querySelector('.btn-text');
+            const spinner = btn.querySelector('.spinner-border');
+            
+            // UI State - Loading
+            btn.disabled = true;
+            btnText.textContent = 'Analyzing...';
+            spinner.classList.remove('d-none');
+            
+            document.getElementById('initial-state').classList.add('d-none');
+            document.getElementById('results-container').classList.add('d-none');
+            document.getElementById('error-alert').classList.add('d-none');
+
+            const payload = {
+                symbol: document.getElementById('symbol').value,
+                price: parseFloat(document.getElementById('price').value),
+                rsi: parseFloat(document.getElementById('rsi').value),
+                ma: parseFloat(document.getElementById('ma').value),
+                trend: document.getElementById('trend').value,
+                volume: document.getElementById('volume').value
+            };
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Something went wrong processing the request.');
+                }
+
+                if (!data.analysis) {
+                    throw new Error('Received empty analysis from API.');
+                }
+
+                // Parse the strict output
+                parseAndDisplayResult(data.analysis);
+
+            } catch (err) {
+                document.getElementById('error-alert').textContent = err.message;
+                document.getElementById('error-alert').classList.remove('d-none');
+                document.getElementById('initial-state').classList.remove('d-none');
+            } finally {
+                // UI State - Reset
+                btn.disabled = false;
+                btnText.textContent = 'Analyze Market';
+                spinner.classList.add('d-none');
+            }
+        });
+
+        function parseAndDisplayResult(text) {
+            // Helper to extract value based on prefix using regex
+            const extract = (regex) => {
+                const match = text.match(regex);
+                return match ? match[1].trim() : '--';
+            };
+            
+            const condition = extract(/Market Condition:\s*(.*)/i);
+            const action = extract(/Suggested Action:\s*(.*)/i);
+            const risk = extract(/Risk Level:\s*(.*)/i);
+            const confidence = extract(/Confidence Level:\s*(.*)/i);
+            
+            // For multiline
+            const extractMultiline = (startMarker, endMarkers) => {
+                const startRegex = new RegExp(`${startMarker}\\s*([\\s\\S]*?)(${endMarkers.join('|')}|$)`, 'i');
+                const match = text.match(startRegex);
+                if (match && match[1]) {
+                    let content = match[1].trim();
+                    content = content.replace(/^[\*\-]\s*/gm, '').trim(); // Remove leading bullets
+                    return content;
+                }
+                return '--';
+            };
+
+            const entry = extractMultiline('Entry Strategy:', ['Risk Level:', 'Confidence Level:']);
+            const stoploss = extractMultiline('Stop Loss Suggestion:', ['Reason:', '========================']);
+            const reason = extractMultiline('Reason:', ['========================', '$']); // '$' to match end of string
+
+            // Update UI
+            updateMetric('res-condition', condition);
+            updateMetric('res-action', action);
+            updateMetric('res-risk', risk);
+            updateMetric('res-confidence', confidence);
+
+            document.getElementById('res-entry').innerHTML = entry.replace(/\\n/g, '<br>');
+            document.getElementById('res-stoploss').innerHTML = stoploss.replace(/\\n/g, '<br>');
+            document.getElementById('res-reason').innerHTML = reason.replace(/\\n/g, '<br>');
+
+            document.getElementById('results-container').classList.remove('d-none');
+        }
+
+        function updateMetric(id, value) {
+            const el = document.getElementById(id);
+            el.textContent = value;
+            el.className = 'metric-value'; // reset classes
+            
+            // Add color classes based on content
+            const valLower = value.toLowerCase();
+            if (valLower.includes('bullish') || valLower.includes('buy') || valLower === 'low') {
+                el.classList.add('text-success');
+            } else if (valLower.includes('bearish') || valLower.includes('sell') || valLower.includes('high')) {
+                el.classList.add('text-danger');
+            } else if (valLower.includes('neutral') || valLower.includes('hold') || valLower.includes('medium')) {
+                el.classList.add('text-warning');
+            }
+        }
+    </script>
+</body>
+</html>

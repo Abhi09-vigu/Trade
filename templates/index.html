@@ -83,46 +83,8 @@
 
                     <div id="results-container" class="d-none flex-grow-1 mt-2">
                         <!-- Parsed results will be injected here -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <div class="metric-card">
-                                    <div class="metric-label">Market Condition</div>
-                                    <div class="metric-value" id="res-condition">--</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="metric-card">
-                                    <div class="metric-label">Suggested Action</div>
-                                    <div class="metric-value" id="res-action">--</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="metric-card">
-                                    <div class="metric-label">Risk Level</div>
-                                    <div class="metric-value" id="res-risk">--</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="metric-card">
-                                    <div class="metric-label">Confidence</div>
-                                    <div class="metric-value" id="res-confidence">--</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="content-card mb-3">
-                            <h5 class="content-title text-primary">Entry Strategy</h5>
-                            <div class="content-body" id="res-entry">--</div>
-                        </div>
-
-                        <div class="content-card mb-3 alert-card border-warning text-warning">
-                            <h5 class="content-title text-warning">Stop Loss Suggestion</h5>
-                            <div class="content-body" id="res-stoploss">--</div>
-                        </div>
-
-                        <div class="content-card">
-                            <h5 class="content-title text-info">Reasoning</h5>
-                            <div class="content-body" id="res-reason">--</div>
+                        <div class="content-card h-100 p-4" style="background: rgba(255,255,255,0.05); border-radius: 12px;">
+                            <div class="content-body fs-5 fw-medium text-light" id="raw-analysis" style="white-space: pre-wrap; line-height: 1.8;">--</div>
                         </div>
                     </div>
                 </div>
@@ -236,60 +198,8 @@
         });
 
         function parseAndDisplayResult(text) {
-            // Helper to extract value based on prefix using regex
-            const extract = (regex) => {
-                const match = text.match(regex);
-                return match ? match[1].trim() : '--';
-            };
-            
-            const condition = extract(/Market Condition:\s*(.*)/i);
-            const action = extract(/Suggested Action:\s*(.*)/i);
-            const risk = extract(/Risk Level:\s*(.*)/i);
-            const confidence = extract(/Confidence Level:\s*(.*)/i);
-            
-            // For multiline
-            const extractMultiline = (startMarker, endMarkers) => {
-                const startRegex = new RegExp(`${startMarker}\\s*([\\s\\S]*?)(${endMarkers.join('|')}|$)`, 'i');
-                const match = text.match(startRegex);
-                if (match && match[1]) {
-                    let content = match[1].trim();
-                    content = content.replace(/^[\*\-]\s*/gm, '').trim(); // Remove leading bullets
-                    return content;
-                }
-                return '--';
-            };
-
-            const entry = extractMultiline('Entry Strategy:', ['Risk Level:', 'Confidence Level:']);
-            const stoploss = extractMultiline('Stop Loss Suggestion:', ['Reason:', '========================']);
-            const reason = extractMultiline('Reason:', ['========================', '$']); // '$' to match end of string
-
-            // Update UI
-            updateMetric('res-condition', condition);
-            updateMetric('res-action', action);
-            updateMetric('res-risk', risk);
-            updateMetric('res-confidence', confidence);
-
-            document.getElementById('res-entry').innerHTML = entry.replace(/\\n/g, '<br>');
-            document.getElementById('res-stoploss').innerHTML = stoploss.replace(/\\n/g, '<br>');
-            document.getElementById('res-reason').innerHTML = reason.replace(/\\n/g, '<br>');
-
+            document.getElementById('raw-analysis').textContent = text.trim();
             document.getElementById('results-container').classList.remove('d-none');
-        }
-
-        function updateMetric(id, value) {
-            const el = document.getElementById(id);
-            el.textContent = value;
-            el.className = 'metric-value'; // reset classes
-            
-            // Add color classes based on content
-            const valLower = value.toLowerCase();
-            if (valLower.includes('bullish') || valLower.includes('buy') || valLower === 'low') {
-                el.classList.add('text-success');
-            } else if (valLower.includes('bearish') || valLower.includes('sell') || valLower.includes('high')) {
-                el.classList.add('text-danger');
-            } else if (valLower.includes('neutral') || valLower.includes('hold') || valLower.includes('medium')) {
-                el.classList.add('text-warning');
-            }
         }
     </script>
 </body>

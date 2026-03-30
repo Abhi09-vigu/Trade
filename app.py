@@ -2,78 +2,30 @@ import os
 import google.generativeai as genai
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
+from datetime import datetime
 
 load_dotenv()
 
 app = Flask(__name__)
 
-# System prompt based on user requirements
-SYSTEM_PROMPT = """You are an AI trading assistant integrated into a Trading Analysis Web Application.
+SYSTEM_PROMPT = """You are an AI trading assistant.
 
-========================
-🧩 SYSTEM FUNCTIONALITIES
-=========================
-This application provides:
-* Real-time market data (price, volume)
-* Technical indicators:
-  * RSI (Relative Strength Index)
-  * Moving Average (MA)
-* Trend detection (Uptrend / Downtrend / Sideways)
+Your task is to analyze the provided market data and generate a trade signal STRICTLY in the exact format below. DO NOT output any other text, explanations, or disclaimers.
 
-Your role is to:
-* Analyze given data
-* Generate structured trading insights
-* Assist users in understanding market conditions
+🪙 [Symbol]
+⏳ Expiration 5 minutes
+✅ Entry at [Current Time]
+[🟢 BUY / 🔴 SELL]
 
-========================
-🧠 ANALYSIS LOGIC
-=================
-1. Identify Market Condition:
-   * Bullish → upward momentum
-   * Bearish → downward momentum
-   * Neutral → sideways / unclear
+Use martingale if necessary 👇
 
-2. RSI Rules:
-   * RSI > 70 → Overbought → potential sell pressure
-   * RSI < 30 → Oversold → potential buy opportunity
+1️⃣ MARTINGALE AT [Current Time + 5 minutes]
+2️⃣ MARTINGALE AT [Current Time + 10 minutes]
 
-3. Moving Average Rules:
-   * Price > MA → bullish signal
-   * Price < MA → bearish signal
-
-4. Trend Confirmation:
-   * Align suggestion with trend direction
-
-5. Combine all indicators logically:
-   * RSI + MA + Trend + Volume
-
-6. DO NOT:
-   * Predict exact future prices
-   * Guarantee profits
-   * Use hype language
-
-========================
-📈 OUTPUT FORMAT (STRICT)
-=========================
-Market Condition: (Bullish / Bearish / Neutral)
-Suggested Action: (Buy / Sell / Hold)
-Entry Strategy:
-* When user should consider entering
-Risk Level: (Low / Medium / High)
-Confidence Level: (Low / Medium / High)
-Stop Loss Suggestion:
-* Suggested safe exit level
-Reason:
-* 2–4 lines based on indicators
-
-========================
-⚠️ SYSTEM BEHAVIOR RULES
-========================
-* Always provide realistic analysis
-* Keep response clean and structured
-* No emojis
-* No extra text outside format
-* This is analysis, not financial advice"""
+Rules:
+1. Determine BUY or SELL based on the input data (e.g. RSI, MA, Trend).
+2. Calculate the Martingale times by adding 5 and 10 minutes exactly to the provided Current Time in HH:MM format.
+3. Keep the exact emojis and phrasing shown above."""
 
 @app.route('/')
 def index():
@@ -97,6 +49,7 @@ def analyze():
 
     if not all([symbol, price, rsi, ma, trend, volume]):
         return jsonify({"error": "All market data fields are required."}), 400
+    current_time_str = datetime.now().strftime("%H:%M")
 
     user_message = f"""========================
 📊 INPUT DATA
@@ -106,8 +59,8 @@ Current Price: {price}
 RSI: {rsi}
 Moving Average: {ma}
 Trend: {trend}
-Volume: {volume}"""
-
+Volume: {volume}
+Current Time: {current_time_str}"""
     try:
         genai.configure(api_key=api_key)
         modelInstance = genai.GenerativeModel('gemini-2.5-flash', system_instruction=SYSTEM_PROMPT)

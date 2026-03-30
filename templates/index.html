@@ -29,33 +29,9 @@
                     <h4 class="mb-4 fw-semibold border-bottom border-secondary pb-2">Market Data Input</h4>
                     <form id="analysis-form">
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label form-label-sm">Symbol</label>
-                                <input type="text" class="form-control" id="symbol" required placeholder="e.g. BTC/USD" value="BTC/USD">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label form-label-sm">Current Price</label>
-                                <input type="number" step="any" class="form-control" id="price" required placeholder="e.g. 64000" value="64000">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label form-label-sm">RSI (14)</label>
-                                <input type="number" step="any" class="form-control" id="rsi" required placeholder="e.g. 45" value="45">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label form-label-sm">Moving Average</label>
-                                <input type="number" step="any" class="form-control" id="ma" required placeholder="e.g. 62000" value="62000">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label form-label-sm">Trend</label>
-                                <select class="form-select" id="trend" required>
-                                    <option value="Uptrend" selected>Uptrend</option>
-                                    <option value="Downtrend">Downtrend</option>
-                                    <option value="Sideways">Sideways</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label form-label-sm">Volume</label>
-                                <input type="text" class="form-control" id="volume" required placeholder="e.g. 1.2B" value="1.2B">
+                            <div class="col-12">
+                                <label class="form-label form-label-sm">Currency Name (Symbol)</label>
+                                <input type="text" class="form-control" id="symbol" required placeholder="e.g. EUR/NZD (OTC)" value="EUR/NZD (OTC)">
                             </div>
                         </div>
 
@@ -110,7 +86,7 @@
         // Initialize TradingView Chart
         let tvWidget = null;
         function updateChart(symbol) {
-            let cleanSymbol = symbol.replace('/', '');
+            let cleanSymbol = symbol.split(' ')[0].replace('/', '');
             
             tvWidget = new TradingView.widget({
                 "autosize": true,
@@ -154,12 +130,7 @@
             document.getElementById('error-alert').classList.add('d-none');
 
             const payload = {
-                symbol: document.getElementById('symbol').value,
-                price: parseFloat(document.getElementById('price').value),
-                rsi: parseFloat(document.getElementById('rsi').value),
-                ma: parseFloat(document.getElementById('ma').value),
-                trend: document.getElementById('trend').value,
-                volume: document.getElementById('volume').value
+                symbol: document.getElementById('symbol').value
             };
 
             try {

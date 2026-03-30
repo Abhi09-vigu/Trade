@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 SYSTEM_PROMPT = """You are an AI trading assistant.
 
-Your task is to analyze the provided market data and generate a trade signal STRICTLY in the exact format below. DO NOT output any other text, explanations, or disclaimers.
+Your task is to analyze the provided currency pair and generate a trade signal STRICTLY in the exact format below. DO NOT output any other text, explanations, or disclaimers.
 
 🪙 [Symbol]
 ⏳ Expiration 5 minutes
@@ -23,7 +23,7 @@ Use martingale if necessary 👇
 2️⃣ MARTINGALE AT [Current Time + 10 minutes]
 
 Rules:
-1. Determine BUY or SELL based on the input data (e.g. RSI, MA, Trend).
+1. Provide a simulated BUY or SELL signal for the requested currency pair.
 2. Calculate the Martingale times by adding 5 and 10 minutes exactly to the provided Current Time in HH:MM format.
 3. Keep the exact emojis and phrasing shown above."""
 
@@ -40,26 +40,15 @@ def analyze():
         return jsonify({"error": "Gemini API Key is missing in .env file."}), 500
 
     symbol = data.get('symbol')
-    price = data.get('price')
-    rsi = data.get('rsi')
-    ma = data.get('ma')
-    trend = data.get('trend')
-    volume = data.get('volume')
-    model = data.get('model', 'meta-llama/llama-3-8b-instruct')
 
-    if not all([symbol, price, rsi, ma, trend, volume]):
-        return jsonify({"error": "All market data fields are required."}), 400
+    if not symbol:
+        return jsonify({"error": "Currency symbol is required."}), 400
     current_time_str = datetime.now().strftime("%H:%M")
 
     user_message = f"""========================
 📊 INPUT DATA
 =============
 Symbol: {symbol}
-Current Price: {price}
-RSI: {rsi}
-Moving Average: {ma}
-Trend: {trend}
-Volume: {volume}
 Current Time: {current_time_str}"""
     try:
         genai.configure(api_key=api_key)
